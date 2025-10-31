@@ -1,4 +1,4 @@
-# PowerShell Module for Azure DevOps REST API including Azure Governance Model samples
+# PowerShell Module for Azure DevOps REST API
 This repository provides a PowerShell module that wraps the Azure DevOps REST API into clean, task-oriented cmdlets. It simplifies automation and scripting across your DevOps workflows, making it easier to manage pipelines, repositories, builds, releases, and work items directly from PowerShell.
 
 In addition to the module, the repository includes sample scripts that demonstrate a complete Azure governance model. These examples showcase how to implement end-to-end governance from CI/CD pipelines to Azure Resource Manager deployments, aligning with best practices for enterprise-grade cloud architecture.
