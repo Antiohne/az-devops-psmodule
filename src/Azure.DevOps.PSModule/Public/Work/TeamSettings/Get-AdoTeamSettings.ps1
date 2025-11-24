@@ -1,30 +1,28 @@
-﻿function Get-AdoTeam {
+﻿# cSpell: ignore teamsettings
+function Get-AdoTeamSettings {
     <#
     .SYNOPSIS
-        Get teams or the team details for a given Azure DevOps project.
+        Gets the settings for a team in an Azure DevOps project.
 
     .DESCRIPTION
-        This function retrieves all teams or the team details for a given Azure DevOps project through REST API.
+        The Get-AdoTeamSettings cmdlet retrieves the settings for a specified team within an Azure DevOps project.
 
     .PARAMETER ProjectId
-        Mandatory. The ID or name of the project.
+        The ID or name of the Azure DevOps project.
 
     .PARAMETER TeamId
-        Mandatory. The ID or name of the team.
+        The ID or name of the team within the specified project.
 
     .PARAMETER ApiVersion
-        Optional. The API version to use.
-
-    .OUTPUTS
-        System.Object
-
-        The team details object.
+        The API version to use for the request. Default is '7.1'.
 
     .LINK
-        https://learn.microsoft.com/en-us/rest/api/azure/devops/core/teams/get
+        https://learn.microsoft.com/en-us/rest/api/azure/devops/work/teamsettings/get
 
     .EXAMPLE
-        $team = Get-AdoTeam -ProjectId 'my-project' -TeamId '00000000-0000-0000-0000-000000000000'
+        Get-AdoTeamSettings -ProjectId "my-project" -TeamId "my-team"
+
+        Retrieves the settings for the team "my-team" in the project "my-project".
     #>
     [CmdletBinding()]
     [OutputType([object])]
@@ -37,15 +35,15 @@
 
         [Parameter(Mandatory = $false)]
         [Alias('api')]
-        [ValidateSet('5.1', '7.1-preview.4', '7.2-preview.3')]
+        [ValidateSet('7.1', '7.2-preview.1')]
         [string]$ApiVersion = '7.1'
     )
 
     begin {
-        Write-Debug ('Command       : {0}' -f $MyInvocation.MyCommand.Name)
-        Write-Debug ('  ProjectId   : {0}' -f $ProjectId)
-        Write-Debug ('  TeamId      : {0}' -f $TeamId)
-        Write-Debug ('  ApiVersion  : {0}' -f $ApiVersion)
+        Write-Debug ('Command        : {0}' -f $MyInvocation.MyCommand.Name)
+        Write-Debug ('  ProjectId    : {0}' -f $ProjectId)
+        Write-Debug ('  TeamId       : {0}' -f $TeamId)
+        Write-Debug ('  ApiVersion   : {0}' -f $ApiVersion)
     }
 
     process {
@@ -56,9 +54,9 @@
                 throw 'Not connected to Azure DevOps. Please connect using Connect-AdoOrganization.'
             }
 
-            $uriFormat = '{0}/_apis/projects/{1}/teams/{2}?api-version={3}'
+            $uriFormat = '{0}/{1}/{2}/_apis/work/teamsettings?api-version={3}'
             $azDevOpsUri = ($uriFormat -f [uri]::new($global:AzDevOpsOrganization), [uri]::EscapeUriString($ProjectId),
-                $TeamId, $ApiVersion)
+                [uri]::EscapeUriString($TeamId), $ApiVersion)
 
             $params = @{
                 Method  = 'GET'
@@ -71,15 +69,11 @@
             return $response
 
         } catch {
-            if ($_.Exception.StatusCode -eq 'NotFound') {
-                Write-Verbose 'Team not found.'
-                return $null
-            }
             throw $_
         }
     }
 
     end {
-        Write-Debug ('Exit : {0}' -f $MyInvocation.MyCommand.Name)
+        Write-Debug ('{0} exited' -f $MyInvocation.MyCommand)
     }
 }

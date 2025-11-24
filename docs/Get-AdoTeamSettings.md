@@ -1,28 +1,28 @@
 ﻿<!--
 document type: cmdlet
 external help file: Azure.DevOps.PSModule-Help.xml
-HelpUri: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/delete?view=azure-devops
+HelpUri: ''
 Locale: en-NL
 Module Name: Azure.DevOps.PSModule
-ms.date: 11/01/2025
+ms.date: 11/24/2025
 PlatyPS schema version: 2024-05-01
-title: Remove-AdoRepository
+title: Get-AdoTeamSettings
 -->
 
 <!-- cSpell: ignore dontshow -->
 
-# Remove-AdoRepository
+# Get-AdoTeamSettings
 
 ## SYNOPSIS
 
-Remove a repository from an Azure DevOps project.
+Gets the settings for a team in an Azure DevOps project.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
 ```text
-Remove-AdoRepository [-ProjectId] <string> [-RepositoryId] <string> [[-ApiVersion] <string>]
+Get-AdoTeamSettings [-ProjectId] <string> [-TeamId] <string> [[-ApiVersion] <string>]
  [<CommonParameters>]
 ```
 
@@ -32,19 +32,19 @@ Remove-AdoRepository [-ProjectId] <string> [-RepositoryId] <string> [[-ApiVersio
 
 ## DESCRIPTION
 
-This function removes a repository from an Azure DevOps project through REST API.
+The Get-AdoTeamSettings cmdlet retrieves the settings for a specified team within an Azure DevOps project.
 
 ## EXAMPLES
 
-### EXAMPLE 1
+### Example 1
 
 #### PowerShell
 
 ```powershell
-Remove-AdoRepository -ProjectName 'my-project' -RepositoryId $repo.id
+Get-AdoTeamSettings -ProjectId 'my-project' -TeamId 'my-team'
 ```
 
-Removes the specified team from the specified project.
+Retrieves the settings for the team "my-team" in the project "my-project".
 
 ## PARAMETERS
 
@@ -58,7 +58,7 @@ Type: System.String
 DefaultValue: 7.1
 SupportsWildcards: false
 Aliases:
-- Api
+- api
 ParameterSets:
 - Name: (All)
   Position: 2
@@ -93,7 +93,10 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -RepositoryId
+### -TeamId
+
+Mandatory.
+The ID or name of the team.
 
 ```yaml
 Type: System.String
@@ -125,9 +128,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### System.Boolean
+### System.Object
 
-Boolean indicating success.
+The team details object.
 
 ## NOTES
 
@@ -135,4 +138,5 @@ Boolean indicating success.
 
 ## RELATED LINKS
 
-- <https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/delete>
+- <https://learn.microsoft.com/en-us/rest/api/azure/devops/work/teamsettings/get>
+

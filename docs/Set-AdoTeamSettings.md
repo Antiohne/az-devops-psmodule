@@ -1,29 +1,27 @@
 ﻿<!--
 document type: cmdlet
 external help file: Azure.DevOps.PSModule-Help.xml
-HelpUri: https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/delete?view=azure-devops
+HelpUri: ''
 Locale: en-NL
 Module Name: Azure.DevOps.PSModule
-ms.date: 11/01/2025
+ms.date: 11/24/2025
 PlatyPS schema version: 2024-05-01
-title: Remove-AdoRepository
+title: Set-AdoTeamSettings
 -->
 
-<!-- cSpell: ignore dontshow -->
-
-# Remove-AdoRepository
+# Set-AdoTeamSettings
 
 ## SYNOPSIS
 
-Remove a repository from an Azure DevOps project.
+Update the settings for a team in Azure DevOps.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
 ```text
-Remove-AdoRepository [-ProjectId] <string> [-RepositoryId] <string> [[-ApiVersion] <string>]
- [<CommonParameters>]
+Set-AdoTeamSettings [-ProjectId] <string> [-TeamId] <string> [-TeamSettings] <Object>
+ [[-ApiVersion] <string>] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -32,19 +30,39 @@ Remove-AdoRepository [-ProjectId] <string> [-RepositoryId] <string> [[-ApiVersio
 
 ## DESCRIPTION
 
-This function removes a repository from an Azure DevOps project through REST API.
+Update the settings for a team in Azure DevOps by sending a PATCH request to the Azure DevOps REST API.
 
 ## EXAMPLES
 
-### EXAMPLE 1
+### Example 1
 
 #### PowerShell
 
 ```powershell
-Remove-AdoRepository -ProjectName 'my-project' -RepositoryId $repo.id
+$params = @{
+  bugsBehavior = 'asRequirements'
+  backlogVisibilities = @{
+    'Microsoft.EpicCategory' = $false
+    'Microsoft.FeatureCategory' = $true
+    'Microsoft.RequirementCategory' = $true
+  }
+  defaultIterationMacro = '@currentIteration'
+  workingDays = @(
+    'monday'
+    'tuesday'
+    'wednesday'
+    'thursday'
+    'friday'
+  )
+  backlogIteration = '00000000-0000-0000-0000-000000000000'
+  }
+
+  Set-AdoTeamSettings -ProjectId 'my-project' -TeamId 'my-other-team' -TeamSettings $params
 ```
 
-Removes the specified team from the specified project.
+Updates the settings for the team "my-other-team" in the project "my-project" with the specified parameters.
+
+The backlogIteration is set to the root iteration, bugs are treated as requirements, and working days are set to Monday through Friday.
 
 ## PARAMETERS
 
@@ -58,7 +76,7 @@ Type: System.String
 DefaultValue: 7.1
 SupportsWildcards: false
 Aliases:
-- Api
+- api
 ParameterSets:
 - Name: (All)
   Position: 2
@@ -93,7 +111,10 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -RepositoryId
+### -TeamId
+
+Mandatory.
+The ID or name of the team.
 
 ```yaml
 Type: System.String
@@ -103,6 +124,27 @@ Aliases: []
 ParameterSets:
 - Name: (All)
   Position: 1
+  IsRequired: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TeamSettings
+
+An object representing the team settings to be updated.
+
+```yaml
+Type: System.Object
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
   IsRequired: true
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -125,14 +167,15 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## OUTPUTS
 
-### System.Boolean
+### System.Object
 
-Boolean indicating success.
+The team details object.
 
 ## NOTES
 
-- Requires an active connection to Azure DevOps using `Connect-AdoOrganization`.
+- N/A
 
 ## RELATED LINKS
 
-- <https://learn.microsoft.com/en-us/rest/api/azure/devops/git/repositories/delete>
+- <https://learn.microsoft.com/en-us/rest/api/azure/devops/work/teamsettings/update>
+
