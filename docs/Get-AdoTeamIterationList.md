@@ -1,28 +1,29 @@
 ﻿<!--
 document type: cmdlet
 external help file: Azure.DevOps.PSModule-Help.xml
-HelpUri: https://learn.microsoft.com/en-us/rest/api/azure/devops/core/teams/get
+HelpUri: ''
 Locale: en-NL
 Module Name: Azure.DevOps.PSModule
-ms.date: 11/01/2025
+ms.date: 11/25/2025
 PlatyPS schema version: 2024-05-01
-title: Get-AdoTeam
+title: Get-AdoTeamIterationList
 -->
 
 <!-- cSpell: ignore dontshow -->
 
-# Get-AdoTeam
+# Get-AdoTeamIterationList
 
 ## SYNOPSIS
 
-Get teams or the team details for a given Azure DevOps project.
+Get the list of team iterations for a given project or team in Azure DevOps.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
 ```text
-Get-AdoTeam [-ProjectId] <string> [-TeamId] <string> [[-ApiVersion] <string>] [<CommonParameters>]
+Get-AdoTeamIterationList [-ProjectId] <string> [[-TeamId] <string>] [[-TimeFrame] <TimeFrame>]
+ [[-ApiVersion] <string>] [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -32,17 +33,21 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function retrieves all teams or the team details for a given Azure DevOps project through REST API.
+This cmdlet retrieves the list of team iterations for a specified project or team in Azure DevOps.
+
+You can filter the iterations by timeframe (past, current, future).
 
 ## EXAMPLES
 
-### EXAMPLE 1
+### Example 1
 
 #### PowerShell
 
 ```powershell
-Get-AdoTeam -ProjectId 'my-project' -TeamId '00000000-0000-0000-0000-000000000000'
+Get-AdoTeamIterationList -ProjectId 'my-project' -TeamId 'my-team' -TimeFrame 'current'
 ```
+
+Retrieves the current iterations for the specified team in the given project.
 
 ## PARAMETERS
 
@@ -56,10 +61,10 @@ Type: System.String
 DefaultValue: 7.1
 SupportsWildcards: false
 Aliases:
-- api
+- Api
 ParameterSets:
 - Name: (All)
-  Position: 2
+  Position: 4
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -93,7 +98,7 @@ HelpMessage: ''
 
 ### -TeamId
 
-Mandatory.
+Optional.
 The ID or name of the team.
 
 ```yaml
@@ -104,7 +109,29 @@ Aliases: []
 ParameterSets:
 - Name: (All)
   Position: 1
-  IsRequired: true
+  IsRequired: false
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: false
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -TimeFrame
+
+Mandatory.
+The timeframe to filter iterations. Valid values are 'past', 'current', and 'future
+
+```yaml
+Type: TimeFrame
+DefaultValue: ''
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: (All)
+  Position: 2
+  IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
@@ -136,4 +163,5 @@ The team details object.
 
 ## RELATED LINKS
 
-- <https://learn.microsoft.com/en-us/rest/api/azure/devops/core/teams/get>
+- <https://learn.microsoft.com/en-us/rest/api/azure/devops/work/iterations/list>
+
