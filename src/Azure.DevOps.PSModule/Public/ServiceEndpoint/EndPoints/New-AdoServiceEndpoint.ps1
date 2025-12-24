@@ -7,7 +7,7 @@
         This function creates a new service endpoint in an Azure DevOps project through REST API.
 
     .PARAMETER Configuration
-        Mandatory. The configuration object for the service endpoint.
+        Mandatory. The configuration JSON for the service endpoint.
 
     .PARAMETER ApiVersion
         Optional. The API version to use.
@@ -22,7 +22,7 @@
 
     .EXAMPLE
         $config = [ordered]@{
-            data                             = [ordered]@{
+            data                 = [ordered]@{
                 creationMode     = 'Manual'
                 environment      = 'AzureCloud'
                 scopeLevel       = 'Subscription'
@@ -53,7 +53,7 @@
                     }
                 }
             )
-        } | ConvertTo-Json -Depth 4
+        } | ConvertTo-Json -Depth 5 -Compress
 
         New-AdoServiceEndpoint -Configuration $objConfig
 
@@ -97,9 +97,9 @@
                 Uri         = $azDevopsUri
                 ContentType = 'application/json'
                 Headers     = @{
-    'Accept'        = 'application/json'
-    'Authorization' = (ConvertFrom-SecureString -SecureString $AzDevOpsAuth -AsPlainText)
-}
+                    'Accept'        = 'application/json'
+                    'Authorization' = (ConvertFrom-SecureString -SecureString $AzDevOpsAuth -AsPlainText)
+                }
                 Body        = $Configuration
             }
 

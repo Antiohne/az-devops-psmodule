@@ -1,28 +1,26 @@
 ﻿<!--
 document type: cmdlet
 external help file: Azure.DevOps.PSModule-Help.xml
-HelpUri: https://learn.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/update?view=azure-devops
+HelpUri: https://learn.microsoft.com/en-us/rest/api/azure/devops/graph/memberships/get
 Locale: en-NL
 Module Name: Azure.DevOps.PSModule
 ms.date: 11/01/2025
 PlatyPS schema version: 2024-05-01
-title: Set-AdoPolicyConfiguration
+title: Get-AdoMembership
 -->
 
-<!-- cSpell: ignore dontshow -->
-
-# Set-AdoPolicyConfiguration
+# Get-AdoMembership
 
 ## SYNOPSIS
 
-Update a policy configuration for an Azure DevOps project.
+Get the membership relationship between a subject and a container in Azure DevOps.
 
 ## SYNTAX
 
 ### __AllParameterSets
 
 ```text
-Set-AdoPolicyConfiguration [-ProjectId] <string> [-ConfigurationId] <int> [-Configuration] <Object>
+Get-AdoMembership [-subjectDescriptor] <string> [-containerDescriptor] <string>
  [[-ApiVersion] <string>] [<CommonParameters>]
 ```
 
@@ -33,7 +31,7 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-This function updates a policy configuration for an Azure DevOps project through REST API.
+This cmdlet retrieves the membership relationship between a specified subject and container in Azure DevOps using the Azure DevOps REST API.
 
 ## EXAMPLES
 
@@ -42,35 +40,10 @@ This function updates a policy configuration for an Azure DevOps project through
 #### PowerShell
 
 ```powershell
-$config = @{
-  "isEnabled": true,
-  "isBlocking": true,
-  "type": @{
-    "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd"
-  },
-  "settings": @{
-    "minimumApproverCount": 1,
-    "creatorVoteCounts": true,
-    "allowDownvotes": false,
-    "resetOnSourcePush": false,
-    "requireVoteOnLastIteration": false,
-    "resetRejectionsOnSourcePush": false,
-    "blockLastPusherVote": false,
-    "requireVoteOnEachIteration": false,
-    "scope": @(
-        {
-          "repositoryId": null,
-          "refName": null,
-          "matchKind": "DefaultBranch"
-        }
-      )
-    }
-  }
-
-Set-AdoPolicyConfiguration -ProjectName 'my-project' -ConfigurationId 24 -Configuration $config
+Get-AdoMembership -containerDescriptor $containerDescriptor -subjectDescriptor $subjectDescriptor
 ```
 
-Sets the policy configuration with ID 24 in the 'my-project' project using the specified configuration.
+Retrieves the membership relationship between the specified subject and container.
 
 ## PARAMETERS
 
@@ -81,13 +54,13 @@ The API version to use.
 
 ```yaml
 Type: System.String
-DefaultValue: 7.1
+DefaultValue: 7.2-preview.1
 SupportsWildcards: false
 Aliases:
-- api
+- Api
 ParameterSets:
 - Name: (All)
-  Position: 3
+  Position: 2
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: false
@@ -97,36 +70,14 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -Configuration
+### -containerDescriptor
 
 Mandatory.
-The configuration JSON for the policy.
+A descriptor to the container in the relationship.
 
 ```yaml
 Type: System.String
 DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: 2
-  IsRequired: true
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -ConfigurationId
-
-Mandatory.
-The ID of the configuration.
-
-```yaml
-Type: System.Int32
-DefaultValue: 0
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
@@ -141,17 +92,16 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -ProjectId
+### -subjectDescriptor
 
 Mandatory.
-The ID or name of the project.
+A descriptor to the child subject in the relationship.
 
 ```yaml
 Type: System.String
 DefaultValue: ''
 SupportsWildcards: false
-Aliases:
-- ProjectName
+Aliases: []
 ParameterSets:
 - Name: (All)
   Position: 0
@@ -185,4 +135,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## RELATED LINKS
 
-- <https://learn.microsoft.com/en-us/rest/api/azure/devops/policy/configurations/update?view=azure-devops>
+- <https://learn.microsoft.com/en-us/rest/api/azure/devops/graph/memberships/get>

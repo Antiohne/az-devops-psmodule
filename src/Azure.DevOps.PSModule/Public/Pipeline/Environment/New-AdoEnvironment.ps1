@@ -1,16 +1,13 @@
 ﻿function New-AdoEnvironment {
     <#
     .SYNOPSIS
-        Update an Azure DevOps Pipeline Environment by its ID.
+        Create a new Azure DevOps Pipeline Environment.
 
     .DESCRIPTION
-        This cmdlet updates the details of a specific Azure DevOps Pipeline Environment using its unique identifier within a specified project.
+        This cmdlet creates a new Azure DevOps Pipeline Environment within a specified project.
 
     .PARAMETER ProjectId
         Mandatory. The ID or name of the project.
-
-    .PARAMETER EnvironmentId
-        Mandatory. The ID of the environment to update.
 
     .PARAMETER Name
         Optional. The new name for the environment.
@@ -72,17 +69,17 @@
             $body = @{
                 name        = $Name
                 description = $Description
-            } | ConvertTo-Json -Depth 10
+            }
 
             $params = @{
                 Method      = 'POST'
                 Uri         = $azDevOpsUri
-                Headers     = @{
-    'Accept'        = 'application/json'
-    'Authorization' = (ConvertFrom-SecureString -SecureString $AzDevOpsAuth -AsPlainText)
-}
-                Body        = $body
                 ContentType = 'application/json'
+                Headers     = @{
+                    'Accept'        = 'application/json'
+                    'Authorization' = (ConvertFrom-SecureString -SecureString $AzDevOpsAuth -AsPlainText)
+                }
+                Body        = ($body | ConvertTo-Json -Depth 3 -Compress)
             }
 
             $response = Invoke-RestMethod @params -Verbose:$VerbosePreference
