@@ -7,7 +7,7 @@
         This cmdlet deletes a specific check configuration using its unique identifier within a specified resource.
 
     .PARAMETER CollectionUri
-        The collection URI of the Azure DevOps collection/organization, e.g., https://dev.azure.com/myorganization.
+        The collection URI of the Azure DevOps collection/organization, e.g., https://dev.azure.com/my-org.
 
     .PARAMETER ProjectName
         Optional. The name or id of the project.
@@ -17,11 +17,12 @@
 
     .PARAMETER Version
         Optional. The API version to use for the request. Default is '7.2-preview.1'.
+        The -preview flag must be supplied in the api-version for such requests.
 
     .EXAMPLE
         $params = @{
             CollectionUri = 'https://dev.azure.com/my-org'
-            ProjectName   = 'my-project'
+            ProjectName   = 'my-project-1'
             Id = 1
         }
         Remove-AdoCheckConfiguration @params -Verbose
@@ -31,7 +32,7 @@
     .EXAMPLE
         $params = @{
             CollectionUri = 'https://dev.azure.com/my-org'
-            ProjectName   = 'my-project'
+            ProjectName   = 'my-project-1'
         }
         @(
             1, 2, 3
@@ -50,11 +51,11 @@
         [string]$ProjectName = $env:DefaultAdoProject,
 
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ValueFromPipeline)]
-        [int32[]]$Id,
+        [int32]$Id,
 
-        [Parameter()]
+        [Parameter(HelpMessage = 'The -preview flag must be supplied in the api-version for such requests.')]
         [Alias('ApiVersion')]
-        [ValidateSet('7.2-preview.1')]
+        [ValidateSet('7.1-preview.1', '7.2-preview.1')]
         [string]$Version = '7.2-preview.1'
     )
 
@@ -83,7 +84,7 @@
                 try {
                     Invoke-AdoRestMethod @params | Out-Null
                 } catch {
-                    if ($_ -match 'does not exist') {
+                    if ($_.ErrorDetails.Message -match 'NotFoundException') {
                         Write-Warning "Check Configuration with ID $Id does not exist, skipping deletion."
                     } else {
                         throw $_
@@ -93,7 +94,6 @@
             } else {
                 Write-Verbose "Calling Invoke-AdoRestMethod with $($params | ConvertTo-Json -Depth 10)"
             }
-
         } catch {
             throw $_
         }
