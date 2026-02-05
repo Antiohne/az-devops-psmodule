@@ -34,10 +34,10 @@ Properties {
     # $script:moduleName = 'Azure.DevOps.PSModule'
 
     # The current release version of the module.
-    $script:buildVersion = [System.Version]'0.2.4'
+    $script:buildVersion = [System.Version]'0.3.0'
 
     # Pre-release label (e.g. 'alpha1', 'beta1', 'rc1'). Set to $null for stable releases.
-    $script:prerelease = 'alpha1' # $null
+    $script:prerelease = $null
 
     # The root path of the repository.
     $script:rootPath = (Get-Item $PSScriptRoot).Parent.FullName
