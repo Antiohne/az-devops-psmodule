@@ -146,22 +146,34 @@ Describe 'Get-AdoPolicyConfiguration' {
             }
         }
 
-        It 'Should support continuation token for pagination' {
+        It 'Should automatically iterate continuation tokens when listing configurations' {
             # Arrange
-            Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod {
-                return @{
-                    value = @($mockPolicyConfig)
-                    count = 1
-                }
+            $firstPage = @{
+                value             = @($mockPolicyConfig)
+                continuationToken = 'token123'
             }
-            $token = 'abc123'
+            $secondPage = @{
+                value             = @($mockPolicyConfig)
+                continuationToken = $null
+            }
+            $script:policyCallCount = 0
+
+            Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod {
+                $script:policyCallCount++
+                if ($script:policyCallCount -eq 1) {
+                    return $firstPage
+                }
+                return $secondPage
+            }
 
             # Act
-            $result = Get-AdoPolicyConfiguration -CollectionUri $mockCollectionUri -ProjectName $mockProject -ContinuationToken $token
+            $result = Get-AdoPolicyConfiguration -CollectionUri $mockCollectionUri -ProjectName $mockProject -Top 1
 
             # Assert
+            $result | Should -HaveCount 2
+            Should -Invoke -ModuleName Azure.DevOps.PSModule -CommandName Invoke-AdoRestMethod -Times 2
             Should -Invoke -ModuleName Azure.DevOps.PSModule -CommandName Invoke-AdoRestMethod -ParameterFilter {
-                $QueryParameters -like "*continuationToken=$token*"
+                $QueryParameters -like '*continuationToken=token123*'
             }
         }
     }

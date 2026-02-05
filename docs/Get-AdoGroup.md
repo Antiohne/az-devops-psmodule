@@ -24,7 +24,7 @@ Get a single or multiple groups in an Azure DevOps organization.
 
 ```text
 Get-AdoGroup [[-CollectionUri] <string>] [[-ScopeDescriptor] <string>] [[-SubjectTypes] <string[]>]
- [[-ContinuationToken] <string>] [[-Name] <string[]>] [[-GroupDescriptor] <string>] [[-Version] <string>]
+ [[-Name] <string[]>] [[-GroupDescriptor] <string>] [[-Version] <string>]
  [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -166,29 +166,6 @@ DontShow: false
 AcceptedValues:
 - vssgp
 - aadgp
-HelpMessage: ''
-```
-
-### -ContinuationToken
-
-Optional.
-An opaque data blob that allows the next page of data to resume immediately after where the previous page ended.
-The only reliable way to know if there is more data left is the presence of a continuation token.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: ListGroups
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
 HelpMessage: ''
 ```
 

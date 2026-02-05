@@ -25,10 +25,6 @@
     .PARAMETER Top
         Optional. The number of projects to retrieve. Used for pagination when retrieving all projects.
 
-    .PARAMETER ContinuationToken
-        Optional. An opaque data blob that allows the next page of data to resume immediately after where the previous page ended.
-        The only reliable way to know if there is more data left is the presence of a continuation token.
-
     .PARAMETER StateFilter
         Optional. A filter for the project state. Possible values are 'deleting', 'new', 'wellFormed', 'createPending', 'all', 'unchanged', 'deleted'.
 
@@ -94,9 +90,6 @@
         [int]$Top,
 
         [Parameter(ParameterSetName = 'ListProjects')]
-        [string]$ContinuationToken,
-
-        [Parameter(ParameterSetName = 'ListProjects')]
         [ValidateSet('deleting', 'new', 'wellFormed', 'createPending', 'all', 'unchanged', 'deleted')]
         [string]$StateFilter,
 
@@ -141,9 +134,6 @@
                 if ($Top) {
                     $queryParameters.Add("`$top=$Top")
                 }
-                if ($ContinuationToken) {
-                    $queryParameters.Add("continuationToken=$ContinuationToken")
-                }
                 if ($StateFilter) {
                     $queryParameters.Add("stateFilter=$StateFilter")
                 }
@@ -157,26 +147,40 @@
             }
 
             try {
-                $results = Invoke-AdoRestMethod @params
-                $projects = if ($Name) { @($results) } else { $results.value }
+                $continuationToken = $null
 
-                foreach ($p_ in $projects) {
-                    $obj = [ordered]@{
-                        id            = $p_.id
-                        name          = $p_.name
-                        description   = $p_.description
-                        visibility    = $p_.visibility
-                        state         = $p_.state
-                        defaultTeam   = $p_.DefaultTeam
-                        capabilities  = if ($p_.capabilities) { $p_.capabilities } else { $null }
-                        collectionUri = $CollectionUri
+                do {
+                    $pagedParams = [System.Collections.Generic.List[string]]::new()
+
+                    if ($queryParameters.Count) {
+                        $pagedParams.AddRange($queryParameters)
                     }
-                    if ($results.continuationToken) {
-                        $obj.continuationToken = $results.continuationToken
+                    if ($continuationToken) {
+                        $pagedParams.Add("continuationToken=$([uri]::EscapeDataString($continuationToken))")
                     }
-                    # Output the project object
-                    [PSCustomObject]$obj
-                }
+
+                    $params.QueryParameters = if ($pagedParams.Count) { $pagedParams -join '&' } else { $null }
+
+                    $results = Invoke-AdoRestMethod @params
+                    $projects = if ($Name) { @($results) } else { $results.value }
+
+                    foreach ($p_ in $projects) {
+                        $obj = [ordered]@{
+                            id            = $p_.id
+                            name          = $p_.name
+                            description   = $p_.description
+                            visibility    = $p_.visibility
+                            state         = $p_.state
+                            defaultTeam   = $p_.DefaultTeam
+                            capabilities  = if ($p_.capabilities) { $p_.capabilities } else { $null }
+                            collectionUri = $CollectionUri
+                        }
+                        [PSCustomObject]$obj
+                    }
+
+                    $continuationToken = ($results.continuationToken | Select-Object -First 1)
+
+                } while ($continuationToken)
             } catch {
                 if ($_.ErrorDetails.Message -match 'ProjectDoesNotExistWithNameException') {
                     Write-Warning "Project with ID $Name does not exist, skipping."

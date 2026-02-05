@@ -24,7 +24,7 @@ Retrieves Azure DevOps project details.
 
 ```text
 Get-AdoProject [[-CollectionUri] <string>] [[-Skip] <int>] [[-Top] <int>]
- [[-ContinuationToken] <string>] [[-StateFilter] <string>] [[-Version] <string>] [<CommonParameters>]
+ [[-StateFilter] <string>] [[-Version] <string>] [<CommonParameters>]
 ```
 
 ### ByNameOrId
@@ -37,9 +37,7 @@ Get-AdoProject [[-CollectionUri] <string>] [[-Name] <string[]>] [-IncludeCapabil
 ## ALIASES
 
 This cmdlet has the following aliases,
-- Id
-- ProjectId
-- ProjectName
+- N/A
 
 ## DESCRIPTION
 
@@ -212,29 +210,6 @@ The number of projects to retrieve. Used for pagination when retrieving all proj
 ```yaml
 Type: System.Int32
 DefaultValue: 100
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: ListProjects
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -ContinuationToken
-
-Optional.
-An opaque data blob that allows the next page of data to resume immediately after where the previous page ended.
-The only reliable way to know if there is more data left is the presence of a continuation token.
-
-```yaml
-Type: System.String
-DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:

@@ -122,6 +122,37 @@ Describe 'Get-AdoGroup' {
             $result | Should -HaveCount 1
             $result.displayName | Should -Be 'Project Administrators'
         }
+
+        It 'Should automatically iterate continuation tokens when listing groups' {
+            # Arrange
+            $firstPage = [PSCustomObject]@{
+                value             = @($mockGroup1)
+                continuationToken = 'token123'
+            }
+            $secondPage = [PSCustomObject]@{
+                value             = @($mockGroup2)
+                continuationToken = $null
+            }
+            $script:groupCallCount = 0
+
+            Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod {
+                $script:groupCallCount++
+                if ($script:groupCallCount -eq 1) {
+                    return $firstPage
+                }
+                return $secondPage
+            }
+
+            # Act
+            $result = Get-AdoGroup -CollectionUri $mockCollectionUri -SubjectTypes @('vssgp')
+
+            # Assert
+            $result | Should -HaveCount 2
+            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -Times 2
+            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -ParameterFilter {
+                $QueryParameters -match 'continuationToken=token123'
+            }
+        }
     }
 
     Context 'Parameter Set Tests' {
@@ -169,19 +200,6 @@ Describe 'Get-AdoGroup' {
             }
         }
 
-        It 'Should include continuationToken query parameter when specified' {
-            # Arrange
-            Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod { return $mockListResponse }
-            $token = 'continuation-token-12345'
-
-            # Act
-            Get-AdoGroup -CollectionUri $mockCollectionUri -ContinuationToken $token
-
-            # Assert
-            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -Times 1 -ParameterFilter {
-                $QueryParameters -match "continuationToken=$token"
-            }
-        }
     }
 
     Context 'Pipeline Support Tests' {

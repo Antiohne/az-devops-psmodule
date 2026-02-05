@@ -261,16 +261,34 @@ Describe 'Get-AdoProject' {
             { Get-AdoProject -CollectionUri 'https://dev.azure.com/my-org' } | Should -Throw '*API Error: Unauthorized*'
         }
 
-        It 'Should handle ContinuationToken for pagination' {
+        It 'Should iterate over continuation tokens returned by the API' {
             # Arrange
-            Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod { return $mockProjects }
+            $firstPage = @{
+                value             = @($mockProjects.value[0])
+                continuationToken = 'token123'
+            }
+            $secondPage = @{
+                value             = @($mockProjects.value[1])
+                continuationToken = $null
+            }
+            $script:invokeCount = 0
+
+            Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod {
+                $script:invokeCount++
+                if ($script:invokeCount -eq 1) {
+                    return $firstPage
+                }
+                return $secondPage
+            }
 
             # Act
-            Get-AdoProject -CollectionUri 'https://dev.azure.com/my-org' -ContinuationToken 'abc123'
+            $result = Get-AdoProject -CollectionUri 'https://dev.azure.com/my-org' -Top 1
 
             # Assert
+            $result | Should -HaveCount 2
+            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -Times 2
             Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -Times 1 -ParameterFilter {
-                $QueryParameters -like '*continuationToken=abc123*'
+                $QueryParameters -like '*continuationToken=token123*'
             }
         }
     }

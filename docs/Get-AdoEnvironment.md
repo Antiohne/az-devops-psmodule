@@ -23,8 +23,7 @@ Get a list of Azure DevOps Pipeline Environments within a specified project.
 ### ListEnvironments (Default)
 
 ```text
-Get-AdoEnvironment [[-CollectionUri] <string>] [[-ProjectName] <string>] [[-Name] <string>]
- [[-ContinuationToken] <string>] [[-Top] <int32>] [[-Version] <string>] [<CommonParameters>]
+Get-AdoEnvironment [[-CollectionUri] <string>] [[-ProjectName] <string>] [[-Name] <string>] [[-Top] <int32>] [[-Version] <string>] [<CommonParameters>]
 ```
 
 ### ByEnvironmentId
@@ -144,28 +143,6 @@ ParameterSets:
   IsRequired: false
   ValueFromPipeline: false
   ValueFromPipelineByPropertyName: true
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
-### -ContinuationToken
-
-Optional.
-A continuation token from a previous request to get the next set of results.
-
-```yaml
-Type: System.String
-DefaultValue: ''
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: ListEnvironments
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
   ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
@@ -292,7 +269,6 @@ Returns environment objects with the following properties:
 - projectName: The project name
 - collectionUri: The collection URI
 - resources: (Only when Expands is 'resourceReferences') Array of resource references
-- continuationToken: (When applicable) Token for pagination
 
 ## NOTES
 

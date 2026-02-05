@@ -23,7 +23,7 @@ Retrieves Azure DevOps policy configuration details.
 ### ListConfigurations
 
 ```text
-Get-AdoPolicyConfiguration [[-CollectionUri] <string>] [[-ProjectName] <string>] [[-PolicyType] <string>] [[-Scope] <string>] [[-Top] <int32>] [[-ContinuationToken] <string>] [[-Version] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+Get-AdoPolicyConfiguration [[-CollectionUri] <string>] [[-ProjectName] <string>] [[-PolicyType] <string>] [[-Scope] <string>] [[-Top] <int32>] [[-Version] <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ByConfigurationId
@@ -244,27 +244,6 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -ContinuationToken
-
-The continuation token for pagination. Used to retrieve the next page of results.
-
-```yaml
-Type: System.String
-DefaultValue: 
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: ListConfigurations
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: false
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues: []
-HelpMessage: ''
-```
-
 ### -Version
 
 The API version to use for the request.
@@ -320,7 +299,6 @@ Returns policy configuration objects with the following properties:
 - settings: The policy-specific settings object
 - createdBy: The user who created the configuration
 - createdDate: The date the configuration was created
-- continuationToken: (Optional) Token for pagination when listing configurations
 - projectName: The project name where the configuration exists
 - collectionUri: The collection URI of the Azure DevOps organization
 

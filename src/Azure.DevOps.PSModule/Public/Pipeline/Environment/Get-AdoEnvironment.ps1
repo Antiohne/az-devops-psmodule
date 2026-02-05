@@ -71,9 +71,6 @@
         [string]$Name,
 
         [Parameter(ParameterSetName = 'ListEnvironments')]
-        [string]$ContinuationToken,
-
-        [Parameter(ParameterSetName = 'ListEnvironments')]
         [int32]$Top,
 
         [Parameter(ValueFromPipelineByPropertyName, ValueFromPipeline, ParameterSetName = 'ByEnvironmentId')]
@@ -120,9 +117,6 @@
                 if ($Name) {
                     $QueryParameters.Add("name=$Name")
                 }
-                if ($ContinuationToken) {
-                    $QueryParameters.Add("continuationToken=$ContinuationToken")
-                }
                 if ($Top) {
                     $QueryParameters.Add("`$top=$Top")
                 }
@@ -136,30 +130,44 @@
             }
 
             try {
-                $results = (Invoke-AdoRestMethod @params)
-                $environments = if ($Id) { @($results) } else { $results.value }
+                $continuationToken = $null
 
-                foreach ($e_ in $environments) {
-                    $obj = [ordered]@{
-                        id          = $e_.id
-                        name        = $e_.name
-                        description = $e_.description
+                do {
+                    $pagedParams = [System.Collections.Generic.List[string]]::new()
+
+                    if ($QueryParameters.Count) {
+                        $pagedParams.AddRange($QueryParameters)
                     }
-                    if ($Expands -eq 'resourceReferences') {
-                        $obj['resources'] = $e_.resources
+                    if ($continuationToken) {
+                        $pagedParams.Add("continuationToken=$([uri]::EscapeDataString($continuationToken))")
                     }
-                    $obj['createdBy'] = $e_.createdBy
-                    $obj['createdOn'] = $e_.createdOn
-                    $obj['lastModifiedBy'] = $e_.lastModifiedBy
-                    $obj['lastModifiedOn'] = $e_.lastModifiedOn
-                    $obj['projectName'] = $ProjectName
-                    $obj['collectionUri'] = $CollectionUri
-                    if ($e_.continuationToken) {
-                        $obj['continuationToken'] = $e_.continuationToken
+
+                    $params.QueryParameters = if ($pagedParams.Count) { $pagedParams -join '&' } else { $null }
+
+                    $results = Invoke-AdoRestMethod @params
+                    $environments = if ($Id) { @($results) } else { $results.value }
+
+                    foreach ($e_ in $environments) {
+                        $obj = [ordered]@{
+                            id          = $e_.id
+                            name        = $e_.name
+                            description = $e_.description
+                        }
+                        if ($Expands -eq 'resourceReferences') {
+                            $obj['resources'] = $e_.resources
+                        }
+                        $obj['createdBy'] = $e_.createdBy
+                        $obj['createdOn'] = $e_.createdOn
+                        $obj['lastModifiedBy'] = $e_.lastModifiedBy
+                        $obj['lastModifiedOn'] = $e_.lastModifiedOn
+                        $obj['projectName'] = $ProjectName
+                        $obj['collectionUri'] = $CollectionUri
+                        [PSCustomObject]$obj
                     }
-                    # Output the environment object
-                    [PSCustomObject]$obj
-                }
+
+                    $continuationToken = ($results.continuationToken | Select-Object -First 1)
+
+                } while ($continuationToken)
             } catch {
                 if ($_.ErrorDetails.Message -match 'EnvironmentNotFoundException') {
                     Write-Warning "Environment with ID $Id does not exist, skipping."

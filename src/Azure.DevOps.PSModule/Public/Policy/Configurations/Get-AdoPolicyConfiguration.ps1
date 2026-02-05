@@ -98,9 +98,6 @@
         [Parameter(ParameterSetName = 'ListConfigurations')]
         [int32]$Top,
 
-        [Parameter(ParameterSetName = 'ListConfigurations')]
-        [string]$ContinuationToken,
-
         [Parameter()]
         [Alias('ApiVersion')]
         [ValidateSet('7.1', '7.2-preview.1')]
@@ -143,9 +140,6 @@
                 if ($PSBoundParameters.ContainsKey('Top')) {
                     $QueryParameters.Add("`$top=$Top")
                 }
-                if ($PSBoundParameters.ContainsKey('ContinuationToken')) {
-                    $QueryParameters.Add("continuationToken=$ContinuationToken")
-                }
             }
 
             $params = @{
@@ -156,30 +150,44 @@
             }
 
             try {
-                $results = (Invoke-AdoRestMethod @params)
-                $configurations = if ($Id) { @($results) } else { $results.value }
+                $continuationToken = $null
 
-                foreach ($c_ in $configurations) {
-                    $obj = [ordered]@{
-                        id          = $c_.id
-                        type        = $c_.type
-                        revision    = $c_.revision
-                        isEnabled   = $c_.isEnabled
-                        isBlocking  = $c_.isBlocking
-                        isDeleted   = $c_.isDeleted
-                        settings    = $c_.settings
-                        createdBy   = $c_.createdBy
-                        createdDate = $c_.createdDate
-                    }
-                    if ($c_.continuationToken) {
-                        $obj['continuationToken'] = $c_.continuationToken
-                    }
-                    $obj['projectName'] = $ProjectName
-                    $obj['collectionUri'] = $CollectionUri
+                do {
+                    $pagedParams = [System.Collections.Generic.List[string]]::new()
 
-                    # Output the configuration object
-                    [PSCustomObject]$obj
-                }
+                    if ($QueryParameters.Count) {
+                        $pagedParams.AddRange($QueryParameters)
+                    }
+                    if ($continuationToken) {
+                        $pagedParams.Add("continuationToken=$([uri]::EscapeDataString($continuationToken))")
+                    }
+
+                    $params.QueryParameters = if ($pagedParams.Count) { $pagedParams -join '&' } else { $null }
+
+                    $results = Invoke-AdoRestMethod @params
+                    $configurations = if ($Id) { @($results) } else { $results.value }
+
+                    foreach ($c_ in $configurations) {
+                        $obj = [ordered]@{
+                            id          = $c_.id
+                            type        = $c_.type
+                            revision    = $c_.revision
+                            isEnabled   = $c_.isEnabled
+                            isBlocking  = $c_.isBlocking
+                            isDeleted   = $c_.isDeleted
+                            settings    = $c_.settings
+                            createdBy   = $c_.createdBy
+                            createdDate = $c_.createdDate
+                        }
+                        $obj['projectName'] = $ProjectName
+                        $obj['collectionUri'] = $CollectionUri
+
+                        [PSCustomObject]$obj
+                    }
+
+                    $continuationToken = ($results.continuationToken | Select-Object -First 1)
+
+                } while ($continuationToken)
             } catch {
                 if ($_.ErrorDetails.Message -match 'NotFoundException') {
                     Write-Warning "Policy configuration with ID $Id does not exist, skipping."

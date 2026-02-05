@@ -130,6 +130,37 @@ Describe 'Get-AdoEnvironment' {
             }
         }
 
+        It 'Should automatically iterate continuation tokens when listing environments' {
+            # Arrange
+            $firstPage = @{
+                value             = @($mockEnvironments.value[0])
+                continuationToken = 'token123'
+            }
+            $secondPage = @{
+                value             = @($mockEnvironments.value[1])
+                continuationToken = $null
+            }
+            $script:environmentCallCount = 0
+
+            Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod {
+                $script:environmentCallCount++
+                if ($script:environmentCallCount -eq 1) {
+                    return $firstPage
+                }
+                return $secondPage
+            }
+
+            # Act
+            $result = Get-AdoEnvironment -CollectionUri 'https://dev.azure.com/my-org' -ProjectName 'TestProject' -Top 1
+
+            # Assert
+            $result | Should -HaveCount 2
+            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -Times 2
+            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -ParameterFilter {
+                $QueryParameters -like '*continuationToken=token123*'
+            }
+        }
+
         It 'Should include resourceReferences when Expands parameter is set' {
             # Arrange
             Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod { return $mockSingleEnvironment }

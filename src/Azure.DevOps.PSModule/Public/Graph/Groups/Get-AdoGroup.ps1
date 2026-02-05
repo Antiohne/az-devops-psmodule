@@ -15,10 +15,6 @@
     .PARAMETER SubjectTypes
         Optional. A comma separated list of user subject subtypes to reduce the retrieved results, e.g. Microsoft.IdentityModel.Claims.ClaimsIdentity
 
-    .PARAMETER ContinuationToken
-        Optional. An opaque data blob that allows the next page of data to resume immediately after where the previous page ended.
-        The only reliable way to know if there is more data left is the presence of a continuation token.
-
     .PARAMETER Name
         Optional. A group's display name to filter the retrieved results.
 
@@ -89,9 +85,6 @@
         [ValidateSet('vssgp', 'aadgp')]
         [string[]]$SubjectTypes = @('vssgp', 'aadgp'),
 
-        [Parameter(ParameterSetName = 'ListGroups')]
-        [string]$ContinuationToken,
-
         [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'ListGroups')]
         [Alias('DisplayName', 'GroupName')]
         [string[]]$Name,
@@ -110,7 +103,6 @@
         Write-Debug ("CollectionUri: $CollectionUri")
         Write-Debug ("ScopeDescriptor: $ScopeDescriptor")
         Write-Debug ("SubjectTypes: $($SubjectTypes -join ',')")
-        Write-Debug ("ContinuationToken: $ContinuationToken")
         Write-Debug ("Name: $($Name -join ',')")
         Write-Debug ("GroupDescriptor: $GroupDescriptor")
         Write-Debug ("Version: $Version")
@@ -140,10 +132,6 @@
                 if ($SubjectTypes) {
                     $queryParameters.Add("subjectTypes=$([string]::Join(',', $SubjectTypes))")
                 }
-
-                if ($ContinuationToken) {
-                    $queryParameters.Add("continuationToken=$ContinuationToken")
-                }
             }
 
             $params = @{
@@ -154,32 +142,47 @@
             }
 
             try {
-                $results = Invoke-AdoRestMethod @params
-                $groups = if ($GroupDescriptor) { @($results) } else { $results.value }
+                $continuationToken = $null
 
-                if ($Name) {
-                    $groups = foreach ($n_ in $Name) {
-                        $groups | Where-Object { -not $n_ -or $_.displayName -like $n_ }
-                    }
-                }
+                do {
+                    $pagedParams = [System.Collections.Generic.List[string]]::new()
 
-                foreach ($g_ in $groups) {
-                    $obj = [ordered]@{
-                        displayName   = $g_.displayName
-                        originId      = $g_.originId
-                        principalName = $g_.principalName
-                        origin        = $g_.origin
-                        subjectKind   = $g_.subjectKind
-                        description   = $g_.description
-                        mailAddress   = $g_.mailAddress
-                        descriptor    = $g_.descriptor
-                        collectionUri = $CollectionUri
+                    if ($queryParameters.Count) {
+                        $pagedParams.AddRange($queryParameters)
                     }
-                    if ($result.continuationToken) {
-                        $obj['continuationToken'] = $result.continuationToken
+                    if ($continuationToken) {
+                        $pagedParams.Add("continuationToken=$([uri]::EscapeDataString($continuationToken))")
                     }
-                    [PSCustomObject]$obj
-                }
+
+                    $params.QueryParameters = if ($pagedParams.Count) { $pagedParams -join '&' } else { $null }
+
+                    $results = Invoke-AdoRestMethod @params
+                    $groups = if ($GroupDescriptor) { @($results) } else { $results.value }
+
+                    if ($Name) {
+                        $groups = foreach ($n_ in $Name) {
+                            $groups | Where-Object { -not $n_ -or $_.displayName -like $n_ }
+                        }
+                    }
+
+                    foreach ($g_ in $groups) {
+                        $obj = [ordered]@{
+                            displayName   = $g_.displayName
+                            originId      = $g_.originId
+                            principalName = $g_.principalName
+                            origin        = $g_.origin
+                            subjectKind   = $g_.subjectKind
+                            description   = $g_.description
+                            mailAddress   = $g_.mailAddress
+                            descriptor    = $g_.descriptor
+                            collectionUri = $CollectionUri
+                        }
+                        [PSCustomObject]$obj
+                    }
+
+                    $continuationToken = ($results.continuationToken | Select-Object -First 1)
+
+                } while ($continuationToken)
             } catch {
                 if ($_.ErrorDetails.Message -match 'InvalidSubjectTypeException') {
                     Write-Warning "Subject with scope descriptor $ScopeDescriptor does not exist, skipping."
