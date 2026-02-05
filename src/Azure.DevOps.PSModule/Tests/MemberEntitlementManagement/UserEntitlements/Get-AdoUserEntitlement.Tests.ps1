@@ -116,13 +116,6 @@ Describe 'Get-AdoUserEntitlement' {
             }
         }
 
-        It 'Should include continuationToken when provided' {
-            Get-AdoUserEntitlement -CollectionUri 'https://dev.azure.com/my-org' -ContinuationToken 'abc123'
-
-            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -Times 1 -ParameterFilter {
-                $QueryParameters -like '*continuationToken=abc123*'
-            }
-        }
     }
 
     Context 'Pagination Tests' {
@@ -130,27 +123,32 @@ Describe 'Get-AdoUserEntitlement' {
             Mock -ModuleName Azure.DevOps.PSModule Confirm-Default { }
         }
 
-        It 'Should loop when continuationToken is returned' {
-            $callCount = 0
+        It 'Should iterate over continuationToken returned by the API' {
+            $firstPage = [PSCustomObject]@{
+                items             = @(@{ id = '1' })
+                continuationToken = 'next123'
+            }
+            $secondPage = [PSCustomObject]@{
+                items             = @(@{ id = '2' })
+                continuationToken = $null
+            }
+            $script:invokeCount = 0
+
             Mock -ModuleName Azure.DevOps.PSModule Invoke-AdoRestMethod {
-                $script:callCount++
-                if ($script:callCount -eq 1) {
-                    return [PSCustomObject]@{
-                        items             = @(@{ id = '1' })
-                        continuationToken = 'next123'
-                    }
-                } else {
-                    return [PSCustomObject]@{
-                        items             = @(@{ id = '2' })
-                        continuationToken = $null
-                    }
+                $script:invokeCount++
+                if ($script:invokeCount -eq 1) {
+                    return $firstPage
                 }
+                return $secondPage
             }
 
             $result = Get-AdoUserEntitlement -CollectionUri 'https://dev.azure.com/my-org'
 
             $result | Should -HaveCount 2
-            $script:callCount | Should -Be 2
+            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -Times 2
+            Should -Invoke Invoke-AdoRestMethod -ModuleName Azure.DevOps.PSModule -Times 1 -ParameterFilter {
+                $QueryParameters -like '*continuationToken=next123*'
+            }
         }
     }
 
