@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 
 ### What's Changed
 - feat(Get-AdoUser): Add user support (#124)
+- fix(Get-AdoUserEntitlement): Correct error handling (#128)
 
 ### Breaking Changes
 - _None_
