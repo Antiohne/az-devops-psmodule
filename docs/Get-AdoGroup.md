@@ -2,9 +2,9 @@
 document type: cmdlet
 external help file: Azure.DevOps.PSModule-Help.xml
 HelpUri: https://learn.microsoft.com/en-us/rest/api/azure/devops/graph/groups/list
-Locale: en-NL
+Locale: nl-NL
 Module Name: Azure.DevOps.PSModule
-ms.date: 01/02/2026
+ms.date: 02-14-2026
 PlatyPS schema version: 2024-05-01
 title: Get-AdoGroup
 -->
@@ -20,12 +20,18 @@ Get a single or multiple groups in an Azure DevOps organization.
 
 ## SYNTAX
 
-### __AllParameterSets
+### ListGroups (Default)
 
-```text
-Get-AdoGroup [[-CollectionUri] <string>] [[-ScopeDescriptor] <string>] [[-SubjectTypes] <string[]>]
- [[-Name] <string[]>] [[-GroupDescriptor] <string>] [[-Version] <string>]
- [-WhatIf] [-Confirm] [<CommonParameters>]
+```powershell
+Get-AdoGroup [-CollectionUri <string>] [-ScopeDescriptor <string>] [-SubjectTypes <string[]>]
+ [-Name <string[]>] [-Version <string>] [<CommonParameters>]
+```
+
+### ByDescriptor
+
+```powershell
+Get-AdoGroup [-CollectionUri <string>] [-GroupDescriptor <string>] [-Version <string>]
+ [<CommonParameters>]
 ```
 
 ## ALIASES
@@ -58,7 +64,7 @@ $project = Get-AdoProject -Name 'my-project-1'
 $projectDescriptor = (Get-AdoDescriptor -StorageKey $project.Id)
 
 $params = @{
-    CollectionUri = 'https://dev.azure.com/my-org'
+    CollectionUri   = 'https://dev.azure.com/my-org'
     ScopeDescriptor = $projectDescriptor
     SubjectTypes    = 'vssgp'
 }
@@ -74,7 +80,7 @@ Retrieves all groups in the specified project with subject types 'vssgp'.
 ```powershell
 $params = @{
     SubjectTypes    = 'vssgp'
-    ScopeDescriptor = $prjDscr
+    ScopeDescriptor = $projectDescriptor
     Name            = @(
         'Project Administrators',
         'Contributors'
@@ -123,10 +129,10 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -ScopeDescriptor
+### -GroupDescriptor
 
 Optional.
-Specify a non-default scope (collection, project) to search for groups.
+The descriptor of a specific group to retrieve. When provided, retrieves a single group by its descriptor.
 
 ```yaml
 Type: System.String
@@ -134,38 +140,14 @@ DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: (All)
+- Name: ByDescriptor
   Position: Named
   IsRequired: false
-  ValueFromPipeline: false
+  ValueFromPipeline: true
   ValueFromPipelineByPropertyName: true
   ValueFromRemainingArguments: false
 DontShow: false
 AcceptedValues: []
-HelpMessage: ''
-```
-
-### -SubjectTypes
-
-Optional.
-A comma separated list of user subject subtypes to reduce the retrieved results, e.g. Microsoft.IdentityModel.Claims.ClaimsIdentity
-
-```yaml
-Type: System.String[]
-DefaultValue: ('vssgp', 'aadgp')
-SupportsWildcards: false
-Aliases: []
-ParameterSets:
-- Name: (All)
-  Position: Named
-  IsRequired: false
-  ValueFromPipeline: false
-  ValueFromPipelineByPropertyName: true
-  ValueFromRemainingArguments: false
-DontShow: false
-AcceptedValues:
-- vssgp
-- aadgp
 HelpMessage: ''
 ```
 
@@ -194,11 +176,10 @@ AcceptedValues: []
 HelpMessage: ''
 ```
 
-### -GroupDescriptor
+### -ScopeDescriptor
 
 Optional.
-The descriptor of a specific group to retrieve.
-When provided, retrieves a single group by its descriptor.
+Specify a non-default scope (collection, project) to search for groups.
 
 ```yaml
 Type: System.String
@@ -206,10 +187,33 @@ DefaultValue: ''
 SupportsWildcards: false
 Aliases: []
 ParameterSets:
-- Name: ByDescriptor
+- Name: ListGroups
   Position: Named
   IsRequired: false
-  ValueFromPipeline: true
+  ValueFromPipeline: false
+  ValueFromPipelineByPropertyName: true
+  ValueFromRemainingArguments: false
+DontShow: false
+AcceptedValues: []
+HelpMessage: ''
+```
+
+### -SubjectTypes
+
+Optional.
+A comma separated list of user subject subtypes to reduce the retrieved results, e.g.
+Microsoft.IdentityModel.Claims.ClaimsIdentity
+
+```yaml
+Type: System.String[]
+DefaultValue: "@('vssgp', 'aadgp')"
+SupportsWildcards: false
+Aliases: []
+ParameterSets:
+- Name: ListGroups
+  Position: Named
+  IsRequired: false
+  ValueFromPipeline: false
   ValueFromPipelineByPropertyName: true
   ValueFromRemainingArguments: false
 DontShow: false

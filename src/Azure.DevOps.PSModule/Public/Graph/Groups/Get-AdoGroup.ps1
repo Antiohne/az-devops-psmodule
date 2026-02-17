@@ -16,10 +16,13 @@
         Optional. A comma separated list of user subject subtypes to reduce the retrieved results, e.g. Microsoft.IdentityModel.Claims.ClaimsIdentity
 
     .PARAMETER Name
-        Optional. A group's display name to filter the retrieved results.
+        Optional. A group's display name to filter the retrieved results. Supports wildcards for pattern matching.
+
+    .PARAMETER GroupDescriptor
+        Optional. The descriptor of a specific group to retrieve. When provided, retrieves a single group by its descriptor.
 
     .PARAMETER Version
-        The API version to use. Default is '7.2-preview.1'.
+        The API version to use for the request. Default is '7.2-preview.1'.
         The -preview flag must be supplied in the api-version for this request to work.
 
     .OUTPUTS
@@ -39,7 +42,7 @@
         $projectDescriptor = (Get-AdoDescriptor -StorageKey $project.Id)
 
         $params = @{
-            CollectionUri = 'https://dev.azure.com/my-org'
+            CollectionUri   = 'https://dev.azure.com/my-org'
             ScopeDescriptor = $projectDescriptor
             SubjectTypes    = 'vssgp'
         }
@@ -167,13 +170,14 @@
 
                     foreach ($g_ in $groups) {
                         $obj = [ordered]@{
-                            displayName   = $g_.displayName
-                            originId      = $g_.originId
-                            principalName = $g_.principalName
-                            origin        = $g_.origin
                             subjectKind   = $g_.subjectKind
                             description   = $g_.description
+                            domain        = $g_.domain
+                            principalName = $g_.principalName
                             mailAddress   = $g_.mailAddress
+                            origin        = $g_.origin
+                            originId      = $g_.originId
+                            displayName   = $g_.displayName
                             descriptor    = $g_.descriptor
                             collectionUri = $CollectionUri
                         }
